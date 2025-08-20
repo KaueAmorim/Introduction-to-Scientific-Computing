@@ -2,7 +2,6 @@
 #define __ZEROFUNCAO_H__
 
 #include <float.h>
-#include <stdbool.h>
 
 // Aproximação aceitável como valor zero
 #define ZERO DBL_EPSILON
@@ -19,9 +18,8 @@ typedef struct {
 
 // Métodos
 // Retornam valor do erro quando método finalizou. Este valor depende de tipoErro
-
-real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, bool ehRapido, int *it, real_t *raiz);
-real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, bool ehRapido, int *it, real_t *raiz);
+real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, int *it, real_t *raiz, void (*f)(Polinomio, real_t, real_t *, real_t *));
+real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, real_t *raiz, void (*f)(Polinomio, real_t, real_t *, real_t *));
 
 // Cálculo de Polinômios
 void calcPolinomio_rapido(Polinomio p, real_t x, real_t *px, real_t *dpx );

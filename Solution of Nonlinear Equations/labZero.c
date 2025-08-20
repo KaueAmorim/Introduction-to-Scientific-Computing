@@ -5,8 +5,7 @@
 #include "utils.h"
 #include "ZeroFuncao.h"
 
-int main ()
-{
+int main () {
 
   real_t a, b;
   Polinomio pol;
@@ -22,42 +21,41 @@ int main ()
 
   scanf("%lf %lf", &a, &b); // intervalo onde está uma das raizes.
 
-  printf("RAPIDO\n");
+  printf("RAPIDO\n\n");
 
   for(int i = 1; i <= 3; i++){
     tempo = timestamp();
-    erro = bisseccao(pol, a, b, i, true, &it, &raiz);
+    erro = bisseccao(pol, a, b, i, &it, &raiz, calcPolinomio_rapido);
     tempo = timestamp() - tempo;
 
-    printf("bissec %.15e %.15e %d %.8e", raiz, erro, it, tempo);
+    printf("bissec  %.15e %.15e %4d  %.8e\n", raiz, erro, it, tempo);
   }
+  
   for(int i = 1; i <= 3; i++){
     tempo = timestamp();
-    erro = newtonRaphson(pol, a, i, true, &it, &raiz);
+    erro = newtonRaphson(pol, (a+b)/2, i, &it, &raiz, calcPolinomio_rapido);
     tempo = timestamp() - tempo;
 
-    printf("newton %.15e %.15e %d %.8e", raiz, erro, it, tempo);
+    printf("newton  %.15e %.15e %4d  %.8e\n", raiz, erro, it, tempo);
   }
 
-  printf("LENTO\n");
+  printf("\nLENTO\n\n");
 
   for(int i = 1; i <= 3; i++){
     tempo = timestamp();
-    erro = bisseccao(pol, a, b, i, false, &it, &raiz);
+    erro = bisseccao(pol, a, b, i, &it, &raiz, calcPolinomio_lento);
     tempo = timestamp() - tempo;
 
-    printf("bissec %.15e %.15e %d %.8e", raiz, erro, it, tempo);
+    printf("bissec  %.15e %.15e %4d  %.8e\n", raiz, erro, it, tempo);
   }
+
   for(int i = 1; i <= 3; i++){
     tempo = timestamp();
-    erro = newtonRaphson(pol, a, i, false, &it, &raiz);
+    erro = newtonRaphson(pol, (a+b)/2, i, &it, &raiz, calcPolinomio_lento);
     tempo = timestamp() - tempo;
 
-    printf("newton %.15e %.15e %d %.8e", raiz, erro, it, tempo);
+    printf("newton  %.15e %.15e %4d  %.8e\n", raiz, erro, it, tempo);
   }
-
-
-  // Restante do programa a partir daqui
 
   return 0;
 }
