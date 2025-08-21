@@ -9,7 +9,7 @@
 real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, int *it, real_t *raiz, void (*f)(Polinomio, real_t, real_t *, real_t *)){
     
     real_t xm_new = x0, xm_old, erro = 0.0;
-    real_t fx=0.0, dfx=0.0;
+    real_t fx = 0.0, dfx = 0.0;
     int parar = 0;
     *it = 0;
 
@@ -27,10 +27,14 @@ real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, int *it, real_
 
         switch (criterioParada) {
             case 1:
-                erro = fabs((xm_new - xm_old)/xm_new);
+                if (xm_new != 0.0)
+                    erro = fabs((xm_new - xm_old) / xm_new);
+                else
+                    erro = fabs(xm_new - xm_old);
                 parar = erro <= EPS;
                 break;
             case 2:
+                f(p, xm_new, &fx, &dfx);
                 erro = fabs(fx);
                 parar = erro <= ZERO;
                 break;
@@ -74,8 +78,10 @@ real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, 
         b = xm_new;
     else if (f1 * f2 > 0)
         a = xm_new;
-    else
-        return xm_new;
+    else{
+        *raiz = xm_new;
+        return 0.0;
+    }
 
     do {
         xm_old = xm_new;
@@ -90,15 +96,21 @@ real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, 
             b = xm_new;
         else if (f1 * f2 > 0)
             a = xm_new;
-        else
-            return xm_new;
+        else{
+            *raiz = xm_new;
+            return 0.0;
+        }
 
         switch (criterioParada) {
             case 1:
-                erro = fabs((xm_new - xm_old)/xm_new);
+                if (xm_new != 0.0)
+                    erro = fabs((xm_new - xm_old) / xm_new);
+                else
+                    erro = fabs(xm_new - xm_old);
                 parar = erro <= EPS;
                 break;
             case 2:
+                f(p, xm_new, &f2, &df2);
                 erro = fabs(f2);
                 parar = erro <= ZERO;
                 break;
@@ -128,13 +140,13 @@ real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, 
 
 
 void calcPolinomio_rapido(Polinomio p, real_t x, real_t *px, real_t *dpx) {
-    *px = 0;
+    *px = p.p[p.grau];
     *dpx = 0;
-    for (int i = p.grau; i > 0; --i) {
-        *px = *px * x + p.p[i];
+    
+    for (int i = p.grau - 1; i >= 0; --i) {
         *dpx = *dpx * x + *px;
+        *px = *px * x + p.p[i];
     }
-    *px = *px * x + p.p[0];
 }
 
 

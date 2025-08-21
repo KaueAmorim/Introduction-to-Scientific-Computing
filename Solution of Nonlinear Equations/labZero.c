@@ -1,16 +1,20 @@
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
+#include <fenv.h>
 
 #include "utils.h"
 #include "ZeroFuncao.h"
 
 int main () {
 
+  // Configurar arredondamento para baixo para todo o programa
+  fesetround(FE_DOWNWARD);
+
   real_t a, b;
   Polinomio pol;
-  int it; 
-  real_t raiz, erro, tempo;
+  int it = 0; 
+  real_t raiz = 0.0, erro = 0.0, tempo = 0.0;
 
   scanf("%d", &pol.grau);
 
@@ -56,6 +60,9 @@ int main () {
 
     printf("newton  %.15e %.15e %4d  %.8e\n", raiz, erro, it, tempo);
   }
+
+  free(pol.p);
+  fesetround(FE_TONEAREST);
 
   return 0;
 }
