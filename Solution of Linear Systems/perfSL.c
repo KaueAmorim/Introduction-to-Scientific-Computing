@@ -1,12 +1,16 @@
 #include <stdio.h>
 #include <fenv.h>
 #include <stdlib.h>
+#include <likwid.h>
 #include "utils.h"
 #include "sislin.h"
 #include "eliminacaoGauss.h"
 #include "gaussSeidel.h"
 
 int main() {
+
+    LIKWID_MARKER_INIT;
+
     // Define o modo de arredondamento para baixo para todos os cálculos de ponto flutuante
     fesetround(FE_DOWNWARD);
 
@@ -37,7 +41,9 @@ int main() {
     SistLinear_t *s_eg = dupSisLin(s_orig);
     if (s_eg) {
         rtime_t tempo_eg = timestamp();
+        LIKWID_MARKER_START("Eliminação-de-Gauss");
         retrosubst(s_eg, x_eg);
+        LIKWID_MARKER_STOP("Eliminação-de-Gauss");
         tempo_eg = timestamp() - tempo_eg;
 
         residuo(s_orig, x_eg, r_eg, s_orig->n);
@@ -59,7 +65,9 @@ int main() {
         real_t norma;
         
         rtime_t tempo_gs = timestamp();
+        LIKWID_MARKER_START("Eliminação-de-Gauss-Seidel");
         int it = gaussSeidel(s_gs, y_gs, erro, maxit, &norma);
+        LIKWID_MARKER_STOP("Eliminação-de-Gauss-Seidel");
         tempo_gs = timestamp() - tempo_gs;
 
         residuo(s_orig, y_gs, r_gs, s_orig->n);
@@ -81,6 +89,8 @@ int main() {
 
     // Restaura o modo de arredondamento padrão
     fesetround(FE_TONEAREST);
+
+    LIKWID_MARKER_CLOSE;
 
     return 0;
 }

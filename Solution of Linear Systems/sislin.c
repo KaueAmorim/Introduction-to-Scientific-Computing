@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-
 #include "utils.h"
 #include "sislin.h"
 
@@ -131,7 +130,6 @@ real_t normaL2(real_t *X, int n)
   return sqrt(norma);
 }
 
-
 /* Calcula o resíduo R de um sistema AX = B
    Vetor *R já deve ter sido alocado previamente.
 */
@@ -143,4 +141,3 @@ void residuo(SistLinear_t *SL, real_t *X, real_t *R, int n)
       R[i] -= SL->A[i][j]*X[j];
   }
 }
-

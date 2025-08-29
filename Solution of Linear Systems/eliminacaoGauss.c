@@ -37,14 +37,19 @@ static void trocaLinha (SistLinear_t *C, int k, int p)
       return;
    }
 
-   real_t *temp = C->A[k];
-   C->A[k] = C->A[p];
-   C->A[p] = temp;
+   real_t temp;
 
-   real_t temp_b = C->b[k];
+   for(int i = 0; i < C->n; i++){
+      temp = C->A[k][i];
+      C->A[k][i] = C->A[p][i];
+      C->A[p][i] = temp;
+   }
+
+   temp = C->b[k];
    C->b[k] = C->b[p];
-   C->b[p] = temp_b;
+   C->b[p] = temp;
 }
+
 
 /* Seja um S.L. de ordem 'n'
    C = A|B em Ax=B

@@ -3,11 +3,11 @@ PROG = perfSL
 OBJS = perfSL.o utils.o sislin.o eliminacaoGauss.o gaussSeidel.o
 
 # Compilador
-CC     = gcc
+CC = gcc
 
 # Acrescentar onde apropriado as opções para incluir uso da biblioteca LIKWID
-CFLAGS = -O0 
-LFLAGS = -lm
+CFLAGS = -O0 -DLIKWID_PERFMON -I${LIKWID_INCLUDE}
+LFLAGS = -lm -L${LIKWID_LIB} -llikwid
 
 # Lista de arquivos para distribuição
 DISTFILES = *.c *.h Makefile
@@ -36,3 +36,6 @@ dist: purge
 	@ln -s . $(DISTDIR)
 	@tar -chzvf $(DISTDIR).tgz $(addprefix ./$(DISTDIR)/, $(DISTFILES))
 	@rm -f $(DISTDIR)
+
+teste:
+	likwid-perfctr -C 3 -g ENERGY -m ./perfSL
