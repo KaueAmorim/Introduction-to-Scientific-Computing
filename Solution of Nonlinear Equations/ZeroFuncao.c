@@ -17,7 +17,6 @@ real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, int *it, real_
         xm_old = xm_new;
         f(p, xm_new, &fx, &dfx);
         if (dfx == 0.0) {
-            // Derivada zero, não pode continuar
             break;
         }
 
@@ -34,7 +33,6 @@ real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, int *it, real_
                 parar = erro <= EPS;
                 break;
             case 2:
-                f(p, xm_new, &fx, &dfx);
                 erro = fabs(fx);
                 parar = erro <= ZERO;
                 break;
@@ -43,7 +41,6 @@ real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, int *it, real_
                 d1.f = xm_new;
                 d2.f = xm_old;
 
-                // Corrige para valores negativos
                 int64_t ulps_diff = llabs((int64_t)d1.i - (int64_t)d2.i);
                 if(ulps_diff > 0) {
                     ulps_diff--;
@@ -66,9 +63,9 @@ real_t newtonRaphson (Polinomio p, real_t x0, int criterioParada, int *it, real_
 real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, real_t *raiz, void (*f)(Polinomio, real_t, real_t *, real_t *)) {
 
     real_t xm_old, xm_new, erro;
-    real_t f1=0.0, df1=0.0, f2=0.0, df2=0.0;
+    real_t f1 = 0.0, df1 = 0.0, f2 = 0.0, df2 = 0.0;
     int parar = 0;
-    *it = 2;
+    *it = 1;
 
     xm_new = (a + b) / 2;
     f(p, a, &f1, &df1);
@@ -86,7 +83,6 @@ real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, 
     do {
         xm_old = xm_new;
         xm_new = (a + b) / 2;
-
         (*it)++;
 
         f(p, a, &f1, &df1);
@@ -110,7 +106,6 @@ real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, 
                 parar = erro <= EPS;
                 break;
             case 2:
-                f(p, xm_new, &f2, &df2);
                 erro = fabs(f2);
                 parar = erro <= ZERO;
                 break;
@@ -119,7 +114,6 @@ real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, 
                 d1.f = xm_new;
                 d2.f = xm_old;
 
-                // Corrige para valores negativos
                 int64_t ulps_diff = llabs((int64_t)d1.i - (int64_t)d2.i);
                 if(ulps_diff > 0) {
                     ulps_diff--;
@@ -131,24 +125,22 @@ real_t bisseccao (Polinomio p, real_t a, real_t b, int criterioParada, int *it, 
             default:
                 return 0.0; // Critério de parada inválido
         }
-    } while (!parar && *it <= MAXIT);
+    } while (!parar && *it < MAXIT);
 
     *raiz = xm_new;
 
     return erro;
 }
 
-
 void calcPolinomio_rapido(Polinomio p, real_t x, real_t *px, real_t *dpx) {
-    *px = p.p[p.grau];
+    *px = 0;
     *dpx = 0;
-    
-    for (int i = p.grau - 1; i >= 0; --i) {
-        *dpx = *dpx * x + *px;
+    for (int i = p.grau; i > 0; --i) {
         *px = *px * x + p.p[i];
+        *dpx = *dpx * x + *px;
     }
+    *px = *px * x + p.p[0];
 }
-
 
 void calcPolinomio_lento(Polinomio p, real_t x, real_t *px, real_t *dpx) {
     *px = 0;
