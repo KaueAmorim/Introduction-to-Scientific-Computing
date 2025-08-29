@@ -54,8 +54,8 @@ int main() {
     // --- Gauss-Seidel ---
     SistLinear_t *s_gs = dupSisLin(s_orig);
     if (s_gs) {
-        real_t erro = 1.0e-6;
-        int maxit = 50;
+        real_t erro = TOL;
+        int maxit = MAXIT;
         real_t norma;
         
         rtime_t tempo_gs = timestamp();

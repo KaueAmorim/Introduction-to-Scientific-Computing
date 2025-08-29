@@ -1,16 +1,16 @@
 # PROGRAMA
-    PROG = perfSL
-    OBJS = utils.o # acrescentar aqui outros módulos do programa
+PROG = perfSL
+OBJS = perfSL.o utils.o sislin.o eliminacaoGauss.o gaussSeidel.o
 
 # Compilador
-    CC     = gcc
+CC     = gcc
 
 # Acrescentar onde apropriado as opções para incluir uso da biblioteca LIKWID
-    CFLAGS = -O0 
-    LFLAGS = -lm
+CFLAGS = -O0 
+LFLAGS = -lm
 
 # Lista de arquivos para distribuição
-DISTFILES = *.c *.h LEIAME* Makefile
+DISTFILES = *.c *.h Makefile
 DISTDIR = ${USER}
 
 .PHONY: all clean purge dist
@@ -20,7 +20,7 @@ DISTDIR = ${USER}
 
 all: $(PROG)
 
-$(PROG): % : %.o $(OBJS)
+$(PROG): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
 
 clean:
