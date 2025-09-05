@@ -38,25 +38,22 @@ Tridiag *genTridiag (EDo *edo)
 }
 
 
-rtime_t gaussSeidel_3Diag (Tridiag *sl, real_t *Y, unsigned int maxiter);
+rtime_t gaussSeidel_3Diag (Tridiag *sl, real_t *Y, unsigned int maxiter)
 {
-  int n = sl->n;
+  int n = sl->n, it = 0;
 
   rtime_t tTotal = timestamp();
 
-  for (int i=0; i < n-1; ++i) {
-    double m = sl->Di[i] / sl->D[i];
-    sl->Di[i] = 0.0;
-    sl->D[i+1] -= sl->Ds[i] * m;
-    sl->B[i+1] -= sl->B[i] * m;
+  while(it < maxiter){
+    Y[ 0 ] = (sl->B[ 0 ] – c[ 0 ] * x[ 1 ]) / d[ 0 ];
+
+    for (int i=1; i < n-1; ++i)
+      X[ i ] = (b[ i ] – a[ i-1 ] * x[ i-1] – c[ i ] * x[ i+1 ]) / d[ i ];
+
+    X[ n-1 ] = (b[ n-1 ] – a[ n-2 ] * x[ n-2 ] ) / d[ n-1 ]
   }
 
-  Y[n-1] = sl->B[n-1] / sl->D[n-1];
-  for (int i=n-2; i >= 0; --i)
-    Y[i] = (sl->B[i] - sl->Ds[i] * Y[i+1]) / sl->D[i];
-
   return timestamp() - tTotal;
-
 }
 
 
@@ -67,9 +64,11 @@ real_t normaL2_3Diag (Tridiag *sl, real_t *Y)
 
   normaL2 = 0.0;
 
-  // algoritmo para calcular Norma L2 com  vetores   das  diagonais   e  termos
-  // independentes do SL
-  
+  for (int i=0; i < n; ++i)
+    normaL2 += Y[i]*Y[i];
+
+  normaL2 = sqrt(normaL2);
+
   return normaL2;
   
 }
@@ -82,17 +81,23 @@ rtime_t gaussSeidel_EDO (EDo *edoeq, real_t *Y, unsigned int maxiter)
 
   rtime_t tTotal = timestamp();
 
-  
   h = (edoeq->b - edoeq->a) / (n+1);
 
   for (int k=0; k < maxiter; ++k) {
-
-    // algoritmo Gauss-Seidel usando parâmetros EDO, sem usar vetores para
-    // diagonais e termos independentes do SL
-
+    for (int i=0; i < n; ++i) { 
+      x = edoeq->a + (i+1)*h;
+      b = h*h * edoeq->r(x);
+      di = 1 - h * edoeq->p(x)/2.0;
+      d = -2 + h*h * edoeq->q(x);
+      ds = 1 + h * edoeq->p(x)/2.0;
+      if (i == 0) b -= ds*Y[i+1] + edoeq->ya * (1 - h*edoeq->p(edoeq->a+h)/2.0);
+      else if (i == n-1) b -= di*Y[i-1] + edoeq->yb * (1 + h*edoeq->p(edoeq->b-h)/2.0);
+      else b -= ds*Y[i+1] + di*Y[i-1] ;
+      Y[i] = b / d;
+    }
   }
 
-  return timestamp() - *tTotal;
+  return timestamp() - tTotal;
 }
 
 real_t normaL2_EDO (EDo *edoeq, real_t *Y)
