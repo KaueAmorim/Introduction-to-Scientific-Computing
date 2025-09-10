@@ -45,34 +45,41 @@ rtime_t gaussSeidel_3Diag (Tridiag *sl, real_t *Y, unsigned int maxiter)
   rtime_t tTotal = timestamp();
 
   while(it < maxiter){
-    Y[ 0 ] = (sl->B[ 0 ] – c[ 0 ] * x[ 1 ]) / d[ 0 ];
+    Y[ 0 ] = (sl->B[ 0 ] - sl->Ds[ 0 ] * Y[ 1 ]) / sl->D[ 0 ];
 
     for (int i=1; i < n-1; ++i)
-      X[ i ] = (b[ i ] – a[ i-1 ] * x[ i-1] – c[ i ] * x[ i+1 ]) / d[ i ];
+      Y[ i ] = (sl->B[ i ] - sl->Di[ i-1 ] * Y[ i-1] - sl->Ds[ i ] * Y[ i+1 ]) / sl->D[ i ];
 
-    X[ n-1 ] = (b[ n-1 ] – a[ n-2 ] * x[ n-2 ] ) / d[ n-1 ]
+    Y[ n-1 ] = (sl->B[ n-1 ] - sl->Di[ n-2 ] * Y[ n-2 ] ) / sl->D[ n-1 ];
+    it++;
   }
 
   return timestamp() - tTotal;
 }
 
 
-real_t normaL2_3Diag (Tridiag *sl, real_t *Y)
+real_t normaL2_residuo_3Diag(Tridiag *sl, real_t *Y)
 {
-  int n = sl->n;
-  real_t normaL2;
+    int n = sl->n;
+    real_t normaL2 = 0.0;
+    real_t residuo;
 
-  normaL2 = 0.0;
+    // Primeiro elemento
+    residuo = sl->B[0] - (sl->D[0] * Y[0] + sl->Ds[0] * Y[1]);
+    normaL2 += residuo * residuo;
 
-  for (int i=0; i < n; ++i)
-    normaL2 += Y[i]*Y[i];
+    // Elementos do meio
+    for (int i = 1; i < n - 1; ++i) {
+        residuo = sl->B[i] - (sl->Di[i-1] * Y[i-1] + sl->D[i] * Y[i] + sl->Ds[i] * Y[i+1]);
+        normaL2 += residuo * residuo;
+    }
 
-  normaL2 = sqrt(normaL2);
+    // Último elemento
+    residuo = sl->B[n-1] - (sl->Di[n-2] * Y[n-2] + sl->D[n-1] * Y[n-1]);
+    normaL2 += residuo * residuo;
 
-  return normaL2;
-  
+    return sqrt(normaL2);
 }
-
 
 rtime_t gaussSeidel_EDO (EDo *edoeq, real_t *Y, unsigned int maxiter)
 {
@@ -100,7 +107,7 @@ rtime_t gaussSeidel_EDO (EDo *edoeq, real_t *Y, unsigned int maxiter)
   return timestamp() - tTotal;
 }
 
-real_t normaL2_EDO (EDo *edoeq, real_t *Y)
+real_t normaL2_residuo_EDO (EDo *edoeq, real_t *Y)
 {
   int n=edoeq->n, i;
   real_t normaL2, res, x, b, d, di, ds, h;
@@ -111,6 +118,18 @@ real_t normaL2_EDO (EDo *edoeq, real_t *Y)
 
   // algoritmo para calcular Norma L2 usando parâmetros EDO, sem usar vetores para
   // diagonais e termos independentes do SL  
+  for (i=0; i < n; ++i) {
+    x = edoeq->a + (i+1)*h;
+    b = h*h * edoeq->r(x);
+    di = 1 - h * edoeq->p(x)/2.0;
+    d = -2 + h*h * edoeq->q(x);
+    ds = 1 + h * edoeq->p(x)/2.0;
+    if (i == 0) b -= ds*Y[i+1] + edoeq->ya * (1 - h*edoeq->p(edoeq->a+h)/2.0);
+    else if (i == n-1) b -= di*Y[i-1] + edoeq->yb * (1 + h*edoeq->p(edoeq->b-h)/2.0);
+    else b -= ds*Y[i+1] + di*Y[i-1] ;
+    res = b - d*Y[i];
+    normaL2 += res*res;
+  }
 
   return normaL2;
 }
