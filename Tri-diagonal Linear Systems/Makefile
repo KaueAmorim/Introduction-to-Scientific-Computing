@@ -1,7 +1,7 @@
 # PROGRAMA
     PROG = resolveEDO
     OBJS = $(PROG).o edo.o utils.o # mod1.o mod2.o
-     VERIF = verificaEP02
+    VERIF = verificaEP02
 
 # Compilador
     CC     = gcc
