@@ -29,7 +29,6 @@ typedef long long int lint_t;
 #define isPot2(n) (!(n & (n - 1)))     // #define isPot2(n) (n && !(n & (n - 1)))
 
 // Funções
-void solveTridiag(Tridiag *sl, real_t *sol);
 rtime_t timestamp(void);
 string_t markerName(string_t baseName, int n);
 

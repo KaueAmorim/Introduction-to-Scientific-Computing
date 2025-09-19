@@ -38,29 +38,5 @@ string_t markerName(string_t baseName, int n)
 
 }
 
-void solveTridiag(Tridiag *sl, real_t *sol)
-{
-    int n = sl->n;
-    real_t *c_prime = (real_t *) malloc(n * sizeof(real_t));
-    real_t *d_prime = (real_t *) malloc(n * sizeof(real_t));
 
-    // Forward elimination
-    c_prime[0] = sl->Ds[0] / sl->D[0];
-    d_prime[0] = sl->B[0] / sl->D[0];
-
-    for (int i = 1; i < n; i++) {
-        real_t m = 1.0 / (sl->D[i] - sl->Di[i] * c_prime[i-1]);
-        c_prime[i] = sl->Ds[i] * m;
-        d_prime[i] = (sl->B[i] - sl->Di[i] * d_prime[i-1]) * m;
-    }
-
-    // Backward substitution
-    sol[n-1] = d_prime[n-1];
-    for (int i = n - 2; i >= 0; i--) {
-        sol[i] = d_prime[i] - c_prime[i] * sol[i+1];
-    }
-
-    free(c_prime);
-    free(d_prime);
-}
 
