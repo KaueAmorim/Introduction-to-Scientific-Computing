@@ -16,6 +16,7 @@
 #include <math.h>
 #include <float.h>
 #include <fenv.h>
+#include <likwid.h>
 #include "utils.h"
 #include "edo.h"
 
@@ -38,6 +39,8 @@
  */
 int main ()
 {
+  LIKWID_MARKER_INIT;
+
   // Configura arredondamento para baixo conforme especificação
   fesetround(FE_DOWNWARD);
   
@@ -66,7 +69,9 @@ int main ()
 
     // Resolve o sistema usando Gauss-Seidel e mede o tempo
     tempo = timestamp();
+    LIKWID_MARKER_START("Gauss-Seidel");
     iter = gaussSeidel(sl, sol, &norma_residuo);
+    LIKWID_MARKER_STOP("Gauss-Seidel");
     tempo = timestamp() - tempo;
 
     // Imprime resultados: solução, iterações, resíduo, tempo
@@ -86,6 +91,8 @@ int main ()
 
   // Restaura modo de arredondamento padrão
   fesetround(FE_TONEAREST);
+
+  LIKWID_MARKER_CLOSE;
   
   return 0;
 }
