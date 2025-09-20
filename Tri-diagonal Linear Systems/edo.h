@@ -1,6 +1,6 @@
 /*
- * Nome: Kaue (substituir pelo seu nome)
- * GRR: XXXXXXXXX (substituir pelo seu GRR)
+ * Nome: Kauê de Amorim Silva
+ * GRR: 20244719
  * 
  * Definições e estruturas para resolução de Equações Diferenciais Ordinárias (EDO)
  * usando métodos de diferenças finitas e sistemas lineares tridiagonais.
@@ -58,54 +58,62 @@ typedef struct {
 
 /**
  * @brief Gera um sistema linear tridiagonal a partir de uma EDO
- * @param edoeq Ponteiro para a estrutura EDO
- * @return Ponteiro para o sistema tridiagonal gerado, ou NULL em caso de erro
  * 
- * Códigos de erro:
- * - NULL: Falha na alocação de memória
+ * Discretiza a EDO y'' + py' + qy = r(x) usando diferenças finitas centradas
+ * em uma malha uniforme, gerando um sistema Ax = b onde A é tridiagonal.
+ * 
+ * A discretização usa:
+ * - y''(xi) ≈ (y[i-1] - 2*y[i] + y[i+1])/h²
+ * - y'(xi) ≈ (y[i+1] - y[i-1])/(2*h)
+ * 
+ * @param edo Ponteiro para a estrutura EDO com os parâmetros da equação
+ * @return Ponteiro para o sistema tridiagonal, ou NULL se erro de alocação
  */
 Tridiag *genTridiag (EDo *edoeq);
+
+/**
+ * @brief Resolve sistema tridiagonal usando método de Gauss-Seidel (versão otimizada)
+ * 
+ * Implementação otimizada que aproveita a estrutura tridiagonal específica,
+ * evitando verificações condicionais desnecessárias dentro dos loops principais.
+ * 
+ * @param sl Ponteiro para o sistema tridiagonal
+ * @param Y Vetor solução (entrada: chute inicial, saída: solução)
+ * @param maxiter Número máximo de iterações permitidas
+ * @param norma Ponteiro onde será armazenada a norma L2 do resíduo final
+ * @return Número de iterações realizadas até convergência ou limite máximo
+ */
+int gaussSeidel_3Diag(Tridiag *sl, real_t *Y, int maxiter, real_t *norma);
+
+/**
+ * @brief Calcula a norma L2 do resíduo para sistemas tridiagonais
+ * 
+ * Função otimizada que calcula ||b - Ax||₂ aproveitando a estrutura
+ * tridiagonal da matriz, tratando explicitamente os casos especiais
+ * da primeira e última linha.
+ * 
+ * @param sl Ponteiro para o sistema tridiagonal  
+ * @param Y Vetor solução atual
+ * @return Norma L2 do resíduo (||b - Ax||₂)
+ */
+real_t normaL2_3Diag(Tridiag *sl, real_t *Y);
+
+/**
+ * @brief Imprime a solução do sistema em formato horizontal
+ * 
+ * Formata a saída da solução em uma única linha com valores separados por espaços,
+ * usando o formato de precisão definido em FORMAT (15 casas decimais).
+ * 
+ * @param sol Vetor com a solução do sistema
+ * @param n Tamanho do vetor solução
+ */
+void prnSolucao(real_t *sol, int n);
 
 /**
  * @brief Imprime a matriz aumentada do sistema linear na saída padrão
  * @param edoeq Ponteiro para a estrutura EDO
  */
 void prnEDOsl (EDo *edoeq);
-
-/**
- * @brief Resolve um sistema tridiagonal usando o método de Gauss-Seidel
- * @param sl Ponteiro para o sistema tridiagonal
- * @param sol Vetor onde será armazenada a solução (deve estar alocado)
- * @param norma_residuo Ponteiro onde será armazenada a norma L2 do resíduo final
- * @return Número de iterações realizadas
- * 
- * Critérios de parada:
- * - Número máximo de iterações (100)
- * - Norma L2 do resíduo ≤ 10⁻⁵
- * 
- * Códigos de erro/retorno:
- * - > 0: Número de iterações até convergência
- * - 100: Máximo de iterações atingido (pode não ter convergido)
- */
-int gaussSeidel(Tridiag *sl, real_t *sol, real_t *norma_residuo);
-
-/**
- * @brief Imprime a solução do sistema em formato horizontal
- * @param sol Vetor solução
- * @param n Tamanho do vetor
- */
-void prnSolucao(real_t *sol, int n);
-
-/**
- * @brief Resolve sistema tridiagonal usando algoritmo de Thomas (eliminação direta)
- * @param sl Ponteiro para sistema tridiagonal
- * @param sol Vetor onde será armazenada a solução (deve estar alocado)
- * 
- * Códigos de erro:
- * - Função pode falhar se algum elemento da diagonal principal for zero
- * - Não há verificação explícita de erro, assume sistema bem condicionado
- */
-void solveTridiag(Tridiag *sl, real_t *sol);
 
 #endif // __EQDIFF_H__
 

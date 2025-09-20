@@ -1,3 +1,6 @@
+# Nome: Kauê de Amorim Silva
+# GRR: 20244719
+
 #!/bin/bash
 
 EXEC="./resolveEDO"

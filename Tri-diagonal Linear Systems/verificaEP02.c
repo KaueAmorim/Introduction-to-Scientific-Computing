@@ -1,3 +1,8 @@
+/*
+ * Nome: Kauê de Amorim Silva
+ * GRR: 20244719
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>

@@ -1,6 +1,6 @@
 /*
- * Nome: Kaue (substituir pelo seu nome)
- * GRR: XXXXXXXXX (substituir pelo seu GRR)
+ * Nome: Kauê de Amorim Silva
+ * GRR: 20244719
  * 
  * Implementação das funções para resolução de Equações Diferenciais Ordinárias
  * usando diferenças finitas e sistemas lineares tridiagonais.
@@ -14,20 +14,7 @@
 
 #define MAXIT 100
 #define EPS 1.0e-5
-
-/**
- * @brief Gera um sistema linear tridiagonal a partir de uma EDO
- * 
- * Discretiza a EDO y'' + py' + qy = r(x) usando diferenças finitas centradas
- * em uma malha uniforme, gerando um sistema Ax = b onde A é tridiagonal.
- * 
- * A discretização usa:
- * - y''(xi) ≈ (y[i-1] - 2*y[i] + y[i+1])/h²
- * - y'(xi) ≈ (y[i+1] - y[i-1])/(2*h)
- * 
- * @param edo Ponteiro para a estrutura EDO com os parâmetros da equação
- * @return Ponteiro para o sistema tridiagonal, ou NULL se erro de alocação
- */
+#define NORMA_STOP EPS
 
 Tridiag *genTridiag (EDo *edo)
 {
@@ -61,74 +48,49 @@ Tridiag *genTridiag (EDo *edo)
   return sl;
 }
 
-/**
- * @brief Resolve um sistema tridiagonal usando o método iterativo de Gauss-Seidel
- * 
- * O método de Gauss-Seidel é um método iterativo que atualiza cada componente
- * da solução usando os valores mais recentes das outras componentes:
- * x[i]^(k+1) = (b[i] - sum(a[i,j]*x[j]^(k+1), j<i) - sum(a[i,j]*x[j]^(k), j>i)) / a[i,i]
- * 
- * @param sl Ponteiro para o sistema tridiagonal
- * @param sol Vetor onde será armazenada a solução (deve estar alocado com tamanho n)
- * @param norma_residuo Ponteiro onde será armazenada a norma L2 do resíduo final
- * @return Número de iterações realizadas até convergência ou limite máximo
- */
-int gaussSeidel(Tridiag *sl, real_t *sol, real_t *norma_residuo) {
-    int n = sl->n;
-    real_t *residuo = (real_t *)malloc(n * sizeof(real_t));
-    int iter;
+int gaussSeidel_3Diag(Tridiag *sl, real_t *Y, int maxiter, real_t *norma) {
+    const int n = sl->n;
+    int it = 0;
 
-    // Chute inicial: vetor nulo
-    for (int i = 0; i < n; ++i) {
-        sol[i] = 0.0;
-    }
-    for (iter = 0; iter < MAXIT; ++iter) {
-        // Atualização Gauss-Seidel: usa valores já atualizados na mesma iteração
-        for (int i = 0; i < n; ++i) {
-            real_t soma = 0.0;
-            if (i > 0) {
-                soma += sl->Di[i] * sol[i - 1];  // valor já atualizado
-            }
-            if (i < n - 1) {
-                soma += sl->Ds[i] * sol[i + 1];  // valor da iteração anterior
-            }
-            sol[i] = (sl->B[i] - soma) / sl->D[i];
-        }
+    do {
+        // Primeira linha não possui nenhum elemento da diagonal inferior
+        Y[0] = (sl->B[0] - sl->Ds[0] * Y[1]) / sl->D[0];
 
-        // Calcula resíduo r = b - Ax para verificar convergência
-        *norma_residuo = 0.0;
-        for (int i = 0; i < n; ++i) {
-            real_t ax = sl->D[i] * sol[i];
-            if (i > 0) {
-                ax += sl->Di[i] * sol[i - 1];
-            }
-            if (i < n - 1) {
-                ax += sl->Ds[i] * sol[i + 1];
-            }
-            residuo[i] = sl->B[i] - ax;
-            *norma_residuo += residuo[i] * residuo[i];
-        }
-        *norma_residuo = sqrt(*norma_residuo);
+        for (int i = 1; i < n - 1; ++i)
+            Y[i] = (sl->B[i] - sl->Di[i - 1] * Y[i - 1] - sl->Ds[i] * Y[i + 1]) / sl->D[i];
 
-        // Verifica critério de parada por tolerância
-        if (*norma_residuo <= EPS) {
-            break;
-        }
-    }
+        // Última linha não possui nenhum elemento da diagonal superior
+        Y[n - 1] = (sl->B[n - 1] - sl->Di[n - 2] * Y[n - 2] ) / sl->D[n - 1];
 
-    free(residuo);
-    return (iter < MAXIT && *norma_residuo <= EPS) ? iter + 1 : iter;
+        *norma = normaL2_3Diag(sl, Y);
+        it++;
+    } while (*norma > NORMA_STOP && it < maxiter);
+
+    return it;
 }
 
-/**
- * @brief Imprime a solução do sistema em formato horizontal
- * 
- * Formata a saída da solução em uma única linha com valores separados por espaços,
- * usando o formato de precisão definido em FORMAT (15 casas decimais).
- * 
- * @param sol Vetor com a solução do sistema
- * @param n Tamanho do vetor solução
- */
+real_t normaL2_3Diag (Tridiag *sl, real_t *Y) {
+    int n = sl->n;
+    real_t normaL2 = 0.0;
+    real_t residuo;
+
+    // Primeiro elemento
+    residuo = sl->B[0] - (sl->D[0] * Y[0] + sl->Ds[0] * Y[1]);
+    normaL2 += residuo * residuo;
+
+    // Elementos do meio
+    for (int i = 1; i < n - 1; ++i) {
+        residuo = sl->B[i] - (sl->Di[i-1] * Y[i-1] + sl->D[i] * Y[i] + sl->Ds[i] * Y[i+1]);
+        normaL2 += residuo * residuo;
+    }
+
+    // Último elemento
+    residuo = sl->B[n-1] - (sl->Di[n-2] * Y[n-2] + sl->D[n-1] * Y[n-1]);
+    normaL2 += residuo * residuo;
+
+    return sqrt(normaL2);
+}
+
 void prnSolucao(real_t *sol, int n) {
     printf("\n");
     for (int i = 0; i < n; ++i) {
@@ -137,8 +99,6 @@ void prnSolucao(real_t *sol, int n) {
     printf("\n");
 }
 
-
-// Exibe SL na saída padrão
 void prnEDOsl (EDo *edoeq)
 {
   int n = edoeq->n, i, j;
@@ -177,49 +137,3 @@ void prnEDOsl (EDo *edoeq)
     printf ("\n");
   }
 }
-
-/**
- * @brief Resolve sistema tridiagonal usando algoritmo de Thomas (eliminação direta)
- * 
- * Implementa o algoritmo de Thomas para resolução eficiente de sistemas
- * tridiagonais Ax = b em O(n) operações. O método consiste em duas fases:
- * 1. Eliminação para frente (forward elimination) 
- * 2. Substituição para trás (backward substitution)
- * 
- * Este método é específico para sistemas tridiagonais e muito mais eficiente
- * que a eliminação gaussiana completa O(n³).
- * 
- * @param sl Ponteiro para sistema tridiagonal (Di, D, Ds, B)
- * @param sol Vetor onde será armazenada a solução (deve estar alocado)
- * 
- * NOTA: Assume que o sistema é bem condicionado (sem elementos nulos na diagonal)
- */
-void solveTridiag(Tridiag *sl, real_t *sol)
-{
-    int n = sl->n;
-    real_t *c_prime = (real_t *) malloc(n * sizeof(real_t));
-    real_t *d_prime = (real_t *) malloc(n * sizeof(real_t));
-
-    // Fase 1: Eliminação para frente
-    // Elimina a diagonal inferior, modificando diagonal principal e vetor b
-    c_prime[0] = sl->Ds[0] / sl->D[0];
-    d_prime[0] = sl->B[0] / sl->D[0];
-
-    for (int i = 1; i < n; i++) {
-        real_t m = 1.0 / (sl->D[i] - sl->Di[i] * c_prime[i-1]);
-        c_prime[i] = sl->Ds[i] * m;
-        d_prime[i] = (sl->B[i] - sl->Di[i] * d_prime[i-1]) * m;
-    }
-
-    // Fase 2: Substituição para trás  
-    // Resolve o sistema triangular superior resultante
-    sol[n-1] = d_prime[n-1];
-    for (int i = n - 2; i >= 0; i--) {
-        sol[i] = d_prime[i] - c_prime[i] * sol[i+1];
-    }
-
-    free(c_prime);
-    free(d_prime);
-}
-
-

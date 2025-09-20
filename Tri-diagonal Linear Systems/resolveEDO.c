@@ -1,6 +1,6 @@
 /*
- * Nome: Kaue (substituir pelo seu nome)
- * GRR: XXXXXXXXX (substituir pelo seu GRR)
+ * Nome: Kauê de Amorim Silva
+ * GRR: 20244719
  * 
  * Programa principal para resolução de Equações Diferenciais Ordinárias (EDO).
  * 
@@ -19,6 +19,8 @@
 #include <likwid.h>
 #include "utils.h"
 #include "edo.h"
+
+#define MAXIT 100
 
 /**
  * @brief Função principal do programa
@@ -49,6 +51,7 @@ int main ()
   real_t *sol;
   real_t norma_residuo, tempo;
   int iter;
+  int edo_count = 0;
 
   // Leitura dos parâmetros gerais da EDO
   scanf("%d", &edo.n);
@@ -58,6 +61,9 @@ int main ()
 
   // Loop para processar múltiplas EDOs (diferentes r(x))
   while (scanf("%lf %lf %lf %lf", &edo.r1, &edo.r2, &edo.r3, &edo.r4) == 4) {
+    edo_count++;
+    string_t marker_name = markerName("Gauss-Seidel", edo_count);
+    
     // Gera o sistema linear tridiagonal correspondente à EDO
     sl = genTridiag(&edo);
 
@@ -66,12 +72,17 @@ int main ()
 
     // Aloca vetor para armazenar a solução
     sol = (real_t *) malloc(edo.n * sizeof(real_t));
+    
+    // Inicializa chute inicial (vetor nulo)
+    for (int i = 0; i < edo.n; ++i) {
+        sol[i] = 0.0;
+    }
 
     // Resolve o sistema usando Gauss-Seidel e mede o tempo
     tempo = timestamp();
-    LIKWID_MARKER_START("Gauss-Seidel");
-    iter = gaussSeidel(sl, sol, &norma_residuo);
-    LIKWID_MARKER_STOP("Gauss-Seidel");
+    LIKWID_MARKER_START(marker_name);
+    iter = gaussSeidel_3Diag(sl, sol, 100, &norma_residuo);
+    LIKWID_MARKER_STOP(marker_name);
     tempo = timestamp() - tempo;
 
     // Imprime resultados: solução, iterações, resíduo, tempo
@@ -87,6 +98,7 @@ int main ()
     free(sl->B);
     free(sl);
     free(sol);
+    free(marker_name);  // Libera string do nome do marcador
   }
 
   // Restaura modo de arredondamento padrão
