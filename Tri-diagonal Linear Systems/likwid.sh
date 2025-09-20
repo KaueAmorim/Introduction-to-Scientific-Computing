@@ -14,7 +14,7 @@ if [ -f ${EXEC} ]; then
     make purge
 fi
 
-make likwid
+make
 
 likwid-perfctr -C ${NUCLEO} -g ${METRICA} -O -o ${CSV} -m ${EXEC}
 echo ""
