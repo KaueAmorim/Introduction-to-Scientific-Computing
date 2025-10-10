@@ -1,12 +1,11 @@
 # PROGRAMA
-        PROG = matmult
-        OBJS = $(PROG).o matriz.o utils.o
+PROG = matmult
+OBJS = $(PROG).o matriz.o utils.o
 
 # Compilador
-           CC = gcc -Wall
-
-       CFLAGS = -O3 -mavx2 -march=native -DLIKWID_PERFMON
-       LFLAGS = -lm -llikwid
+CC = gcc -Wall -O3 -mavx2 -march=native
+CFLAGS = -DLIKWID_PERFMON -I${LIKWID_INCLUDE}
+LFLAGS = -lm -L${LIKWID_LIB} -llikwid
 
 # Lista de arquivos para distribuição
 DISTFILES = *.c *.h README.md Makefile perfctr
@@ -19,8 +18,8 @@ DISTDIR = `basename ${PWD}`
 
 all: $(PROG)
 
-debug:         CFLAGS += -g -D_DEBUG_
-debug:         $(PROG)
+debug: CFLAGS += -g -D_DEBUG_
+debug: $(PROG)
 
 $(PROG): $(OBJS) 
 	$(CC) $(CFLAGS) -o $@ $^ $(LFLAGS)
@@ -31,7 +30,7 @@ clean:
 
 purge:   clean
 	@echo "Faxina ...."
-	@rm -f  $(PROG) *.o a.out $(DISTDIR) $(DISTDIR).tar
+	@rm -f  $(PROG) *.o
 	@rm -f *.png marker.out
 
 dist: purge

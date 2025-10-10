@@ -11,6 +11,8 @@ set xlabel  "N (bytes)"
 set logscale x
 # set logscale y
 
+set datafile separator comma
+
 #
 # TEMPO
 #
