@@ -1,0 +1,60 @@
+# Trabalho 1 - Solução de Sistemas Lineares Esparsos com Pré-condicionadores
+
+## Autores
+
+-   Kauê de Amorim Silva - 20244719
+-   Otto Schmidt - 20244386
+
+## Descrição
+
+Este programa resolve sistemas lineares esparsos utilizando o **Método dos Gradientes Conjugados** com diferentes tipos de pré-condicionadores. O sistema implementa matrizes k-diagonais e suporta pré-condicionadores Jacobi, Gauss-Seidel e SSOR.
+
+## Funcionalidades
+
+### Método dos Gradientes Conjugados Precondicionado
+
+-   Resolve sistemas lineares da forma Ax = b
+-   Transforma sistemas não-simétricos em simétricos positivos definidos (A^T*A*x = A^T*b)
+-   Implementa convergência baseada na norma máxima entre iterações consecutivas
+
+### Pré-condicionadores Suportados
+
+1. **Identidade** (w = -1): Sem pré-condicionamento
+2. **Jacobi** (w = 0): M = D^(-1)
+3. **Gauss-Seidel** (w = 1): M = (D + L)*D^(-1)*(D + U)
+4. **SSOR** (1 < w < 2): Symmetric Successive Over-Relaxation
+
+## Estrutura de Dados
+
+### Matriz k-diagonal
+
+As matrizes esparsas são armazenadas no formato k-diagonal, onde apenas as k diagonais não-nulas são mantidas em memória:
+
+-   `A[0...k-1][0...n-1]`: cada linha representa uma diagonal
+-   Diagonal principal em `A[k/2]`
+-   Diagonais inferiores em `A[0...k/2-1]`
+-   Diagonais superiores em `A[k/2+1...k-1]`
+
+## Módulos
+
+### `sislin.c`
+
+Contém as principais funções numéricas:
+
+-   `gradientesConjugados()`: Implementa o método CG precondicionado
+-   `aplicaPreCondicionador()`: Resolve sistemas M^(-1)*r via substituições triangulares
+-   `geraDLU()`: Decompõe matriz A em D (diagonal), L (inferior), U (superior)
+-   `geraPreCond()`: Constrói matriz de pré-condicionamento
+-   `genSimetricaPositiva()`: Transforma sistema em A^T*A*x = A^T*b
+
+## Fundamentos Teóricos
+
+A implementação segue a teoria de pré-condicionadores SSOR descritos em "Iterative Methods for Sparse Linear Systems" (Saad), onde o pré-condicionador é da forma M = (D - ωE)*D^(-1)*(D - ωF), com A = D - E - F.
+
+## Referências
+
+-   SAAD, Yousef. _Iterative Methods for Sparse Linear Systems_. 2nd Edition. SIAM, 2003. Disponível em: https://www-users.cse.umn.edu/~saad/IterMethBook_2ndEd.pdf
+
+-   CUNHA, M. Cristina C. _Métodos Numéricos_. 2ª Edição. Editora da UNICAMP, 2002. Capítulo 3, seções 3.3, 3.4 e 3.5.
+
+-   Wikipedia Contributors. _Conjugate gradient method_. Wikipedia, The Free Encyclopedia. Disponível em: https://en.wikipedia.org/wiki/Conjugate_gradient_method
