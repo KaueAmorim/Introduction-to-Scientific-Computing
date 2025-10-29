@@ -19,6 +19,8 @@ DISTDIR = ${USER}
 
 .PHONY: clean purge dist all
 
+all: $(PROG)
+
 %.o: %.c %.h utils.h
 	$(CC) -c $(CFLAGS) -o $@ $<
 
